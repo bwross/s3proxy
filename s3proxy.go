@@ -12,7 +12,6 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
-	"path"
 	"sort"
 	"strings"
 	"time"
@@ -70,6 +69,7 @@ func main() {
 	if base, _ = url.Parse(flag.Arg(0)); base == nil || base.Scheme == "" {
 		log.Fatalf("bad URL: %q", flag.Arg(0))
 	}
+	base.Path = strings.TrimSuffix(base.Path, "/")
 
 	// Extract id and key from URL if not passed explicitly.
 	if base.User != nil {
@@ -91,7 +91,7 @@ func direct(req *http.Request) {
 	// Re-route the request.
 	req.URL.Scheme = base.Scheme
 	req.URL.Host = base.Host
-	req.URL.Path = path.Join(base.Path, req.URL.Path)
+	req.URL.Path = base.Path + req.URL.Path
 
 	if req.Header["Date"] == nil {
 		req.Header.Set("Date", time.Now().Format(time.RFC1123Z))
