@@ -28,3 +28,7 @@ Run the proxy publicly accessible over port 80 using `-addr`:
 Run the proxy in read-only mode using `-ro`:
 
     s3proxy -id <id> -key <secret> -ro http://s3.amazonaws.com
+
+Serve from a bucket or subdirectory by appending a path to the URL:
+
+    s3proxy -id <id> -key <secret> http://s3.amazonaws.com/bucket
