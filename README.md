@@ -8,6 +8,8 @@ access S3 without having to know how to sign S3 requests.
         	access key
       -key string
         	secret key
+      -ro
+        	only allow GETs (read-only)
 
 #### Installing
 
