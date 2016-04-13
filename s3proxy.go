@@ -43,18 +43,16 @@ var canonParams = map[string]bool{
 	"website":                      true,
 }
 
-var (
-	id, key string
-	base    *url.URL
-)
-
 func main() {
-	server := http.Server{Handler: &httputil.ReverseProxy{Director: direct}}
+	proxy := new(Proxy)
+	proxy.Director = proxy.Direct
+	server := http.Server{Handler: proxy}
 
 	// Parse command line flags.
-	flag.StringVar(&id, "id", "", "access key")
-	flag.StringVar(&key, "key", "", "secret key")
+	flag.StringVar(&proxy.ID, "id", "", "access key")
+	flag.StringVar(&proxy.Key, "key", "", "secret key")
 	flag.StringVar(&server.Addr, "addr", "127.0.0.1:8080", "addr to bind to")
+	flag.BoolVar(&proxy.ReadOnly, "ro", false, "only allow GETs (read-only)")
 	flag.Usage = func() {
 		fmt.Fprintln(os.Stderr, "Usage: s3proxy [options] <url>")
 		flag.PrintDefaults()
@@ -66,32 +64,44 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	if base, _ = url.Parse(flag.Arg(0)); base == nil || base.Scheme == "" {
-		log.Fatalf("bad URL: %q", flag.Arg(0))
-	}
-	base.Path = strings.TrimSuffix(base.Path, "/")
-
-	// Extract id and key from URL if not passed explicitly.
-	if base.User != nil {
-		if id == "" {
-			id = base.User.Username()
-		}
-		if key == "" {
-			key, _ = base.User.Password()
-		}
-	}
+	proxy.SetURL(flag.Arg(0))
 
 	log.Fatalln(server.ListenAndServe())
 }
 
+// A Proxy is an http.Handler that proxies to a URL and signs requests.
+type Proxy struct {
+	httputil.ReverseProxy
+	*url.URL
+	ID, Key  string
+	ReadOnly bool
+}
+
+// SetURL sets the base URL, exiting if it is invalid.
+func (p *Proxy) SetURL(u string) {
+	if p.URL, _ = url.Parse(flag.Arg(0)); p.URL == nil || p.URL.Scheme == "" {
+		log.Fatalf("bad URL: %q", flag.Arg(0))
+	}
+	p.URL.Path = strings.TrimSuffix(p.URL.Path, "/")
+}
+
+// ServeHTTP implements http.Handler.
+func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if p.ReadOnly && r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	p.ReverseProxy.ServeHTTP(w, r)
+}
+
 // Direct the incoming request to the proxy target.
-func direct(req *http.Request) {
+func (p *Proxy) Direct(req *http.Request) {
 	log.Println("Request:", req.Method, req.URL)
 
 	// Re-route the request.
-	req.URL.Scheme = base.Scheme
-	req.URL.Host = base.Host
-	req.URL.Path = base.Path + req.URL.Path
+	req.URL.Scheme = p.Scheme
+	req.URL.Host = p.Host
+	req.URL.Path = p.Path + req.URL.Path
 
 	if req.Header["Date"] == nil {
 		req.Header.Set("Date", time.Now().Format(time.RFC1123Z))
@@ -104,7 +114,7 @@ func direct(req *http.Request) {
 	}
 
 	// Sign the request.
-	hmac := hmac.New(sha1.New, []byte(key))
+	hmac := hmac.New(sha1.New, []byte(p.Key))
 	io.WriteString(hmac, req.Method+"\n"+
 		req.Header.Get("Content-MD5")+"\n"+
 		req.Header.Get("Content-Type")+"\n"+
@@ -112,7 +122,7 @@ func direct(req *http.Request) {
 		canonicalizedAmzHeaders(req.Header)+
 		canonicalizedResource(req.URL))
 	sig := base64.StdEncoding.EncodeToString(hmac.Sum(nil))
-	req.Header.Set("Authorization", "AWS "+id+":"+sig)
+	req.Header.Set("Authorization", "AWS "+p.ID+":"+sig)
 }
 
 func canonicalizedAmzHeaders(h http.Header) (s string) {

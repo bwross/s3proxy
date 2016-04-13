@@ -10,10 +10,15 @@ access S3 without having to know how to sign S3 requests.
         	secret key
 
 #### Examples
+
 Run the proxy locally, proxying to `http://s3.amazonaws.com`:
 
     s3proxy -id <id> -key <secret> http://s3.amazonaws.com
 
-Run the proxy publicly accessible over port 80:
+Run the proxy publicly accessible over port 80 using `-addr`:
 
     s3proxy -id <id> -key <secret> -addr 0.0.0.0:80 http://s3.amazonaws.com
+
+Run the proxy in read-only mode using `-ro`:
+
+    s3proxy -id <id> -key <secret> -ro http://s3.amazonaws.com
