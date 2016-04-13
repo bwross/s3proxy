@@ -9,6 +9,12 @@ access S3 without having to know how to sign S3 requests.
       -key string
         	secret key
 
+#### Installing
+
+Go 1.5 or later is required, and `GOPATH` must be configured.
+
+    go get github.com/bwross/s3proxy
+
 #### Examples
 
 Run the proxy locally, proxying to `http://s3.amazonaws.com`:
