@@ -13,63 +13,29 @@ access S3 without having to know how to sign S3 requests.
 
 ### Installing
 
-In order to build and use s3proxy, you'll need to first install go (version 1.5 or later), as well as set the `GOPATH` environment variable.
+In order to build and use `s3proxy`, you'll need to first install Go (version 1.5 or later), as well as set the `GOPATH` environment variable.
 
-#### Installing go
+#### Installing Go
 
-1.  Start here: [https://golang.org/doc/install](https://golang.org/doc/install)
-2.  Once installed, you'll want to set `GOPATH` to a directory structure where you want to download and build code.
-	3.  Read about GOPATH here: [https://github.com/golang/go/wiki/GOPATH](https://github.com/golang/go/wiki/GOPATH)
-	4.  Basically, you'll want to set `GOPATH` at the top level of where you'll be pulling down and buliding gocode packages. For our purposes ,:
-		
-			mkdir -p /Users/andypern/gocode
-			export GOPATH=/Users/andypern/gocode
-		Obviously you can put this into your profile/.bashrc, etc.
-	5. Verify its set via:
-			
-			echo $GOPATH
+1. Start here: https://golang.org/doc/install
+2. Once installed, you'll want to set `GOPATH` to a directory structure where you want to download and build code.
+	1. Read about `GOPATH` here: https://github.com/golang/go/wiki/GOPATH
+	2. You'll want to set `GOPATH` to the top level of where you'll be pulling down and building Go packages. For our purposes, `$HOME/gocode`:
 
-####Install/build s3proxy
+			mkdir -p $HOME/gocode
+			export GOPATH=$HOME/gocode
 
-Now that you have GO all set and ready to 'go', its as simple as:
+3. Optionally, add `$GOPATH/bin` to your `PATH` so you can easily use Go binaries from the command line.
 
-1.  Change your working directory to $GOPATH:
+		export PATH=$PATH:$GOPATH/bin
 
-		cd $GOPATH
+#### Install/build s3proxy
 
-2.  Run the following to grab and build the s3proxy binary:
+Now that you have Go all set and ready to "go", it's as simple as:
 
-		go get github.com/bwross/s3proxy
-		
-If all went well, you should see some stuff:
+	go get github.com/bwross/s3proxy
 
-	ls -R
-
-Which should show you something like:
-
-	bin src
-	
-	./bin:
-	s3proxy
-	
-	./src:
-	github.com
-	
-	./src/github.com:
-	bwross
-	
-	./src/github.com/bwross:
-	s3proxy
-	
-	./src/github.com/bwross/s3proxy:
-	LICENSE    README.md  s3proxy.go
-	
-The file in ./bin should be an executable suitable for running on your current system.  On an OSX host:
-	
-	file bin/s3proxy
-	bin/s3proxy: Mach-O 64-bit executable x86_64
-
-
+If all went well, `$GOPATH/bin/s3proxy` should be an executable suitable for running on your current system. If you configured your `PATH`, you can now run `s3proxy` directly from the command line.
 
 #### Examples
 
