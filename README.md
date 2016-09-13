@@ -33,7 +33,7 @@ In order to build and use `s3proxy`, you'll need to first install Go (version 1.
 
 Now that you have Go all set and ready to "go", it's as simple as:
 
-	go get github.com/bwross/s3proxy
+	go get github.com/igneous-systems/s3proxy
 
 If all went well, `$GOPATH/bin/s3proxy` should be an executable suitable for running on your current system. If you configured your `PATH`, you can now run `s3proxy` directly from the command line.
 
